@@ -2,14 +2,15 @@
 
 Gophant is a small CLI that scaffolds a Go web project (Gin + GORM) with a convention-based structure so you can quickly start new apps.
 
-## Install (local)
+## Install (recommended)
 
-- Build and move to a directory in PATH:
-  go build -o gophant .
-  sudo mv gophant /usr/local/bin
+Install directly with Go (no manual build/move required):
 
-- Or install directly (recommended for releases):
-  go install github.com/gophant/cli@latest
+  go install github.com/YOUR_GITHUB_USERNAME/gophant@latest
+
+Notes:
+- Ensure $(go env GOPATH)/bin or $GOBIN is in your PATH. Example: export PATH="$(go env GOPATH)/bin:$PATH"
+- If installing from a tagged release use the tag: @v0.1.0
 
 ## Usage
 
@@ -18,7 +19,8 @@ Create a new project in the current working directory:
   gophant create myapp
 
 Flags:
-  -f, --force   Overwrite existing target directory if present
+  -f, --force           Overwrite existing target directory if present
+  -t, --templates PATH  Use custom templates from PATH (overrides embedded templates)
 
 After creation:
   cd myapp
@@ -33,11 +35,11 @@ Run tests and formatting locally:
   go test ./...
   go fmt ./...
 
-Project structure and templates are embedded so the generator is easy to maintain.
+Project structure and templates are embedded by default; use --templates to provide custom templates during development.
 
 ## CI & Releases
 
-This repository uses GitHub Actions to run tests, vet, and formatting checks. Releases should publish binaries (use goreleaser for cross-compilation and artifacts).
+This repository uses GitHub Actions to run tests, vet, and formatting checks. For releases, use goreleaser to publish cross-compiled binaries and checksums.
 
 ## Contributing
 
@@ -46,4 +48,3 @@ Issues and PRs welcome. Keep changes small and add tests for generator behavior.
 ## License
 
 MIT
-
