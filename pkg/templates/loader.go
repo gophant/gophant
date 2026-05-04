@@ -66,7 +66,13 @@ func loadFromDir(dir string) (TemplateSet, error) {
 	if ts.Config, err = read("pkg_config_config.go.tmpl"); err != nil {
 		errAcc = err
 	}
-	if ts.Routes, err = read("internal_routes_routes.go.tmpl"); err != nil {
+	if ts.Routes, err = read("app_routes_routes.go.tmpl"); err != nil {
+		errAcc = err
+	}
+	if ts.Root, err = read("cmd_root_root.go.tmpl"); err != nil {
+		errAcc = err
+	}
+	if ts.Serve, err = read("cmd_serve_serve.go.tmpl"); err != nil {
 		errAcc = err
 	}
 	if ts.Gitignore, err = read("gitignore.tmpl"); err != nil {

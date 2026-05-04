@@ -42,11 +42,11 @@ func CreateProject(appName string, force bool, templatesDir string, assumeYes bo
 	// Step 1: Create all required directories inside temp project
 	dirs := []string{
 		filepath.Join(tempProjectPath, "cmd"),
-		filepath.Join(tempProjectPath, "internal", "models"),
-		filepath.Join(tempProjectPath, "internal", "handlers"),
-		filepath.Join(tempProjectPath, "internal", "routes"),
-		filepath.Join(tempProjectPath, "internal", "middleware"),
-		filepath.Join(tempProjectPath, "internal", "database"),
+		filepath.Join(tempProjectPath, "app", "models"),
+		filepath.Join(tempProjectPath, "app", "handlers"),
+		filepath.Join(tempProjectPath, "app", "routes"),
+		filepath.Join(tempProjectPath, "app", "middleware"),
+		filepath.Join(tempProjectPath, "app", "database"),
 		filepath.Join(tempProjectPath, "pkg", "config"),
 		filepath.Join(tempProjectPath, "pkg", "validators"),
 		filepath.Join(tempProjectPath, "migrations"),
@@ -71,13 +71,15 @@ func CreateProject(appName string, force bool, templatesDir string, assumeYes bo
 	}
 
 	files := map[string]string{
-		filepath.Join(tempProjectPath, "go.mod"):                          ts.GoMod,
-		filepath.Join(tempProjectPath, "cmd", "main.go"):                  ts.Main,
-		filepath.Join(tempProjectPath, ".env.example"):                    ts.Env,
-		filepath.Join(tempProjectPath, "README.md"):                       ts.Readme,
-		filepath.Join(tempProjectPath, "pkg", "config", "config.go"):      ts.Config,
-		filepath.Join(tempProjectPath, "internal", "routes", "routes.go"): ts.Routes,
-		filepath.Join(tempProjectPath, ".gitignore"):                      ts.Gitignore,
+		filepath.Join(tempProjectPath, "go.mod"):                     ts.GoMod,
+		filepath.Join(tempProjectPath, "main.go"):                    ts.Main,
+		filepath.Join(tempProjectPath, ".env.example"):               ts.Env,
+		filepath.Join(tempProjectPath, "README.md"):                  ts.Readme,
+		filepath.Join(tempProjectPath, "pkg", "config", "config.go"): ts.Config,
+		filepath.Join(tempProjectPath, "app", "routes", "routes.go"): ts.Routes,
+		filepath.Join(tempProjectPath, "cmd", "root.go"):             ts.Root,
+		filepath.Join(tempProjectPath, "cmd", "serve.go"):            ts.Serve,
+		filepath.Join(tempProjectPath, ".gitignore"):                 ts.Gitignore,
 	}
 
 	fmt.Println("📝 Creating files...")

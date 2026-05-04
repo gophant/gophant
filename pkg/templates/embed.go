@@ -19,8 +19,14 @@ var readme string
 //go:embed pkg_config_config.go.tmpl
 var configGo string
 
-//go:embed internal_routes_routes.go.tmpl
+//go:embed app_routes_routes.go.tmpl
 var routesGo string
+
+//go:embed cmd_root_root.go.tmpl
+var rootGo string
+
+//go:embed cmd_serve_serve.go.tmpl
+var serveGo string
 
 //go:embed gitignore.tmpl
 var gitignore string
@@ -33,6 +39,8 @@ var Embedded = TemplateSet{
 	Readme:    readme,
 	Config:    configGo,
 	Routes:    routesGo,
+	Root:      rootGo,
+	Serve:     serveGo,
 	Gitignore: gitignore,
 }
 
@@ -44,5 +52,7 @@ type TemplateSet struct {
 	Readme    string
 	Config    string
 	Routes    string
+	Root      string
+	Serve     string
 	Gitignore string
 }

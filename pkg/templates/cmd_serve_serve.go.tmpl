@@ -1,0 +1,40 @@
+package cmd
+
+import (
+	"log"
+	"os"
+
+	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
+	"github.com/spf13/cobra"
+	"{{.AppName}}/app/routes"
+	"{{.AppName}}/pkg/config"
+)
+
+var serveCmd = &cobra.Command{
+	Use:   "serve",
+	Short: "Run the HTTP server",
+	Run: func(cmd *cobra.Command, args []string) {
+		// Load environment variables
+		godotenv.Load()
+
+		// Initialize Gin router
+		router := gin.Default()
+
+		// Register routes
+		routes.RegisterRoutes(router)
+
+		// Get server port from env or config
+		port := os.Getenv("SERVER_PORT")
+		if port == "" {
+			port = ":8080"
+		}
+
+		log.Printf("🚀 Server running on %s", port)
+		router.Run(port)
+	},
+}
+
+func init() {
+	rootCmd.AddCommand(serveCmd)
+}
