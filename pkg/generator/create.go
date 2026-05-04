@@ -13,7 +13,7 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/gophant/cli/pkg/templates"
+	"github.com/gophant/gophant/pkg/templates"
 )
 
 // ProjectData holds information about the project

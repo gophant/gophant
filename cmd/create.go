@@ -3,7 +3,7 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/gophant/cli/pkg/generator"
+	"github.com/gophant/gophant/pkg/generator"
 	"github.com/spf13/cobra"
 )
 
