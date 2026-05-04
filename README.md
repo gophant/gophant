@@ -1,49 +1,84 @@
 # Gophant — Go project scaffolder
 
-Gophant is a small CLI that scaffolds a Go web project (Gin + GORM) with a convention-based structure so you can quickly start new apps.
+Gophant is a simple CLI that creates a Go web project (Gin + GORM) with a clear, convention-based layout.
 
 ## Install (recommended)
 
-Install directly with Go (no manual build/move required):
+Install with Go (one command):
 
   go install github.com/YOUR_GITHUB_USERNAME/gophant@latest
 
-Notes:
-- Ensure $(go env GOPATH)/bin or $GOBIN is in your PATH. Example: export PATH="$(go env GOPATH)/bin:$PATH"
-- If installing from a tagged release use the tag: @v0.1.0
+Make sure your Go bin is in PATH:
+
+  export PATH="$(go env GOPATH)/bin:$PATH"
+
+(If using a released version, replace @latest with a tag like @v0.1.0.)
 
 ## Usage
 
-Create a new project in the current working directory:
+Create a new project:
 
   gophant create myapp
 
 Flags:
   -f, --force           Overwrite existing target directory if present
-  -t, --templates PATH  Use custom templates from PATH (overrides embedded templates)
+  -t, --templates PATH  Use custom templates (see examples below)
 
-After creation:
+Quick start after creation:
+
   cd myapp
-  go mod tidy
   cp .env.example .env
+  go mod tidy
   go run cmd/main.go
 
-## Development
+## Templates — examples (easy)
 
-Run tests and formatting locally:
+Default (built-in templates):
+
+  gophant create myapp
+
+Use templates from current directory:
+
+1. Create a folder named "templates" where you run the command.
+2. Put these files inside the folder:
+   - go.mod.tmpl
+   - main.go.tmpl
+   - .env.example.tmpl
+   - README.md.tmpl
+   - pkg_config_config.go.tmpl
+   - internal_routes_routes.go.tmpl
+   - gitignore.tmpl
+3. Run:
+
+  gophant create myapp
+
+Use templates from a specific path:
+
+  gophant create myapp -t /home/me/custom-templates
+
+The CLI will use your files instead of the built-in templates.
+
+## Run tests & format code (local)
+
+- Run tests:
 
   go test ./...
+
+- Format code (keeps style consistent):
+
   go fmt ./...
 
-Project structure and templates are embedded by default; use --templates to provide custom templates during development.
+Tests check behavior; fmt fixes code formatting.
 
-## CI & Releases
+## CI & Releases (simple)
 
-This repository uses GitHub Actions to run tests, vet, and formatting checks. For releases, use goreleaser to publish cross-compiled binaries and checksums.
+- Enable GitHub Actions to run tests and go fmt on each push (helps catch problems early).
+- Use goreleaser to build and publish binaries for different OS/architectures when you create a release tag.
 
-## Contributing
+## Contributing (simple)
 
-Issues and PRs welcome. Keep changes small and add tests for generator behavior.
+- Open an issue to discuss changes or submit a small PR.
+- Prefer small, focused PRs and add tests for any code changes.
 
 ## License
 
