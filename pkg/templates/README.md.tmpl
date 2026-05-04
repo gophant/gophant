@@ -1,0 +1,71 @@
+# {{.AppName}}
+
+Created with **Gophant** 🐘🐹 - Scaffolder for Go web developers
+
+## Getting Started
+
+### Prerequisites
+- Go 1.21 or higher
+- MySQL (default) or PostgreSQL (optional)
+
+### Installation
+
+~~~bash
+ go mod tidy
+ go mod download
+~~~
+
+### Running the Application
+
+~~~bash
+ cp .env.example .env
+ go run cmd/main.go
+~~~
+
+The server will start on the port defined in ~.env~ (default: http://localhost:8080).
+
+> If no ~.env~ file is found, default configuration values will be used.
+
+---
+
+## Project Structure
+
+~~~
+{{.AppName}}/
+├── cmd/
+│   └── main.go            # Application entry point
+├── internal/
+│   ├── models/            # GORM models
+│   ├── handlers/          # Request handlers
+│   ├── routes/            # Route definitions
+│   ├── middleware/        # Middleware (auth, cors, etc)
+│   └── database/          # Database connections
+├── pkg/
+│   ├── config/            # Configuration management
+│   └── validators/        # Validation logic
+├── migrations/            # Database migrations
+├── .env.example           # Environment variables template
+└── go.mod                 # Go module definition
+~~~
+
+---
+
+## Gophant Features
+
+✅ Pre-configured Gin routes  
+✅ Environment variable setup  
+✅ Modular project structure  
+✅ GORM integration ready  
+✅ MySQL support out of the box  
+✅ Middleware support  
+✅ Clean architecture  
+
+---
+
+## License
+
+MIT License - {{.Year}}
+
+---
+
+Created with Gophant 🐘🐹

@@ -26,7 +26,7 @@ Example:
 
 		// Create the project
 		fmt.Printf("🐘🐹 Creating Gophant project: %s\n", appName)
-		if err := generator.CreateProject(appName, force); err != nil {
+		if err := generator.CreateProject(appName, force, templatesDir, yes); err != nil {
 			return fmt.Errorf("failed to create project: %w", err)
 		}
 

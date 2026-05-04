@@ -1,0 +1,31 @@
+package main
+
+import (
+"log"
+"os"
+
+"github.com/gin-gonic/gin"
+"github.com/joho/godotenv"
+"{{.AppName}}/internal/routes"
+"{{.AppName}}/pkg/config"
+)
+
+func main() {
+// Load environment variables
+godotenv.Load()
+
+// Initialize Gin router
+router := gin.Default()
+
+// Register routes
+routes.RegisterRoutes(router)
+
+// Get server port from config
+port := os.Getenv("SERVER_PORT")
+if port == "" {
+port = ":8080"
+}
+
+log.Printf("🚀 Server running on %s", port)
+router.Run(port)
+}

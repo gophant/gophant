@@ -6,7 +6,7 @@ Gophant is a simple CLI that creates a Go web project (Gin + GORM) with a clear,
 
 Install with Go (one command):
 
-  go install github.com/YOUR_GITHUB_USERNAME/gophant@latest
+  go install github.com/gophant/gophant@latest
 
 Make sure your Go bin is in PATH:
 

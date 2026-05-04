@@ -1,0 +1,46 @@
+package config
+
+import (
+"os"
+
+"github.com/joho/godotenv"
+)
+
+// Config holds application configuration
+type Config struct {
+AppName    string
+AppEnv     string
+AppDebug   bool
+DBHost     string
+DBPort     string
+DBDatabase string
+DBUsername string
+DBPassword string
+ServerPort string
+}
+
+// LoadConfig loads configuration from environment variables
+func LoadConfig() *Config {
+// Load .env file if it exists
+godotenv.Load()
+
+return &Config{
+AppName:    getEnv("APP_NAME", "gophant-app"),
+AppEnv:     getEnv("APP_ENV", "local"),
+AppDebug:   getEnv("APP_DEBUG", "true") == "true",
+DBHost:     getEnv("DB_HOST", "localhost"),
+DBPort:     getEnv("DB_PORT", "3306"),
+DBDatabase: getEnv("DB_DATABASE", "gophant"),
+DBUsername: getEnv("DB_USERNAME", "root"),
+DBPassword: getEnv("DB_PASSWORD", ""),
+ServerPort: getEnv("SERVER_PORT", ":8080"),
+}
+}
+
+// getEnv gets an environment variable with a default value
+func getEnv(key string, defaultValue string) string {
+if value, exists := os.LookupEnv(key); exists {
+return value
+}
+return defaultValue
+}
