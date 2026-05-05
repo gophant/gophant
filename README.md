@@ -29,7 +29,7 @@ Quick start after creation:
   cd myapp
   cp .env.example .env
   go mod tidy
-  go run cmd/main.go
+  go run main.go
 
 ## Templates — examples (easy)
 

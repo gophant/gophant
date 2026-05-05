@@ -2,33 +2,33 @@ package templates
 
 import _ "embed"
 
-// Embedded templates
+// Embedded templates (default)
 
-//go:embed go.mod.tmpl
+//go:embed default/go.mod.tmpl
 var goMod string
 
-//go:embed main.go.tmpl
+//go:embed default/main.go.tmpl
 var mainGo string
 
-//go:embed .env.example.tmpl
+//go:embed default/.env.example.tmpl
 var envExample string
 
-//go:embed README.md.tmpl
+//go:embed default/README.md.tmpl
 var readme string
 
-//go:embed pkg_config_config.go.tmpl
+//go:embed default/pkg_config_config.go.tmpl
 var configGo string
 
-//go:embed app_routes_routes.go.tmpl
+//go:embed default/app_routes_routes.go.tmpl
 var routesGo string
 
-//go:embed cmd_root_root.go.tmpl
+//go:embed default/cmd_root_root.go.tmpl
 var rootGo string
 
-//go:embed cmd_serve_serve.go.tmpl
+//go:embed default/cmd_serve_serve.go.tmpl
 var serveGo string
 
-//go:embed gitignore.tmpl
+//go:embed default/gitignore.tmpl
 var gitignore string
 
 // Embedded template set exposed to loader
