@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"path/filepath"
+	"strings"
 
 	"github.com/gophant/gophant/pkg/generator"
 	"github.com/spf13/cobra"
@@ -45,8 +46,14 @@ After creation:
 		// Determine templates dir to use
 		templatesDirToUse := templatesDir
 		if templatesDirToUse == "" && templateName != "" {
-			// Look for ./templates/<arch>/<templateName>
-			templatesDirToUse = filepath.Join(".", "templates", arch, templateName)
+			// If user supplied a path-like template (e.g. "mvc/react-app" or "mvc"),
+			// prefer using that directly (loader supports embedded paths).
+			if strings.Contains(templateName, "/") || templateName == "mvc" || templateName == "ddd" || strings.HasPrefix(templateName, "mvc/") || strings.HasPrefix(templateName, "ddd/") {
+				templatesDirToUse = templateName
+			} else {
+				// Look for ./templates/<arch>/<templateName>
+				templatesDirToUse = filepath.Join(".", "templates", arch, templateName)
+			}
 		}
 
 		// Create the project
