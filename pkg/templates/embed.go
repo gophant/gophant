@@ -4,6 +4,7 @@ import (
 	"embed"
 	"fmt"
 	"io/fs"
+	"os"
 	"path/filepath"
 	"strings"
 )
@@ -104,6 +105,73 @@ func LoadEmbeddedPath(path string) (TemplateSet, error) {
 	default:
 		return TemplateSet{}, fmt.Errorf("unknown architecture: %s", arch)
 	}
+}
+
+// CopyEmbeddedSkeleton copies files from an embedded skeleton (e.g., "mvc" or "ddd") to dest.
+// It returns an error if the embedded path does not exist or is empty.
+func CopyEmbeddedSkeleton(path string, dest string) error {
+	p := strings.TrimPrefix(path, "./templates/")
+	p = strings.TrimPrefix(p, "./")
+	p = strings.TrimPrefix(p, "/")
+	p = filepath.ToSlash(p)
+	parts := strings.Split(p, "/")
+	if len(parts) == 0 || parts[0] == "" {
+		return fmt.Errorf("invalid embedded template path: %s", path)
+	}
+	arch := parts[0]
+	rest := ""
+	if len(parts) > 1 {
+		rest = strings.Join(parts[1:], "/")
+	}
+
+	var fsys fs.FS
+	var base string
+	switch arch {
+	case "mvc":
+		fsys = mvcFS
+		base = "mvc"
+	case "ddd":
+		fsys = dddFS
+		base = "ddd"
+	case "default":
+		fsys = defaultFS
+		base = "default"
+	default:
+		return fmt.Errorf("unknown architecture: %s", arch)
+	}
+
+	if rest != "" {
+		base = filepath.ToSlash(filepath.Join(base, rest))
+	}
+
+	// Walk embedded FS and write files into dest preserving relative paths
+	return fs.WalkDir(fsys, base, func(pth string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		rel, err := filepath.Rel(base, pth)
+		if err != nil {
+			return err
+		}
+		target := filepath.Join(dest, rel)
+		if d.IsDir() {
+			return os.MkdirAll(target, 0o755)
+		}
+		// Read file from embedded FS
+		b, err := fs.ReadFile(fsys, pth)
+		if err != nil {
+			return err
+		}
+		// Ensure parent dir
+		if err := os.MkdirAll(filepath.Dir(target), 0o755); err != nil {
+			return err
+		}
+		// Write file
+		if err := os.WriteFile(target, b, 0o644); err != nil {
+			return err
+		}
+		return nil
+	})
 }
 
 // TemplateSet holds templates

@@ -66,9 +66,11 @@ func CreateProject(appName string, force bool, templatesDir string, assumeYes bo
 		Year:    "2026",
 	}
 
-	// If templatesDir points to a full skeleton directory, copy it and apply template substitutions
+	// If templatesDir points to a full skeleton directory on disk, copy it and apply template substitutions.
+	// Also support embedded skeletons specified by architecture identifiers (e.g. "mvc" or "ddd").
 	usedSkeleton := false
 	if templatesDir != "" {
+		// Local directory
 		if info, err := os.Stat(templatesDir); err == nil && info.IsDir() {
 			fmt.Printf("📦 Using skeleton template directory: %s\n", templatesDir)
 			if err := copyDir(templatesDir, tempProjectPath); err != nil {
@@ -81,6 +83,18 @@ func CreateProject(appName string, force bool, templatesDir string, assumeYes bo
 			}
 
 			usedSkeleton = true
+		} else {
+			// Try embedded skeleton (arch identifier)
+			if err := templates.CopyEmbeddedSkeleton(templatesDir, tempProjectPath); err == nil {
+				fmt.Printf("📦 Using embedded skeleton: %s\n", templatesDir)
+				// Perform placeholder substitution across all files in tempProjectPath
+				if err := substituteTemplatesInDir(tempProjectPath, projectData); err != nil {
+					return fmt.Errorf("failed to apply templates to embedded skeleton: %w", err)
+				}
+				usedSkeleton = true
+			} else {
+				fmt.Printf("warning: failed to use embedded skeleton %s: %v\n", templatesDir, err)
+			}
 		}
 	}
 
