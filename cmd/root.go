@@ -26,12 +26,10 @@ func Execute() {
 	}
 }
 
-var templatesDir string
 var yes bool
 
 func init() {
 	// Global flags
-	rootCmd.PersistentFlags().StringVarP(&templatesDir, "templates", "t", "", "Path to custom templates directory (overrides embedded)")
 	rootCmd.PersistentFlags().BoolVarP(&yes, "yes", "y", false, "Answer yes to prompts (non-interactive)")
 	// Subcommands are added in separate files
 }

@@ -2,15 +2,12 @@ package cmd
 
 import (
 	"fmt"
-	"path/filepath"
-
 	"github.com/gophant/gophant/pkg/generator"
 	"github.com/spf13/cobra"
 )
 
 var force bool
 var arch string
-var templateVariant string
 
 // createCmd represents the create command
 var createCmd = &cobra.Command{
@@ -37,30 +34,17 @@ After creation:
 			return fmt.Errorf("invalid arch: %s (must be 'mvc', 'ddd' or 'default')", arch)
 		}
 
-		// Determine templates dir to use
-		templatesDirToUse := templatesDir
-		if templatesDirToUse == "" {
-			if arch != "" {
-				if templateVariant != "" {
-					// Prefer local ./templates/<arch>/<variant> if present, otherwise loader will try embedded
-					templatesDirToUse = filepath.Join(".", "templates", arch, templateVariant)
-				} else {
-					// Use arch directly which loader treats as embedded identifier if no local dir
-					templatesDirToUse = arch
-				}
-			}
+		// Determine templates dir to use: only embedded arch or default (no local templates support)
+		templatesDirToUse := ""
+		if arch != "" {
+			// pass arch to loader so it may load embedded skeleton for the architecture
+			templatesDirToUse = arch
 		}
 
 		// Create the project
 		fmt.Printf("🐘🐹 Creating Gophant project: %s\n", appName)
 		if arch != "" {
 			fmt.Printf("Using architecture: %s\n", arch)
-			if templateVariant != "" {
-				fmt.Printf("Using template variant: %s\n", templateVariant)
-			}
-		}
-		if templatesDirToUse != "" && templatesDirToUse != arch {
-			fmt.Printf("Using templates from: %s\n", templatesDirToUse)
 		}
 
 		if err := generator.CreateProject(appName, force, templatesDirToUse, yes); err != nil {
@@ -83,6 +67,5 @@ func init() {
 	createCmd.Flags().BoolVarP(&force, "force", "f", false, "Overwrite existing directory if present")
 	createCmd.Flags().StringVarP(&arch, "arch", "a", "", "Architecture template group to use (mvc|ddd)")
 	createCmd.Flags().StringVar(&arch, "architecture", "", "Architecture template group to use (mvc|ddd)")
-	createCmd.Flags().StringVar(&templateVariant, "template", "", "Template variant name under the architecture (use with -a/--arch)")
 	rootCmd.AddCommand(createCmd)
 }

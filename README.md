@@ -32,13 +32,13 @@ Quick usage
   # Create using embedded DDD skeleton
   gophant create myapp -a ddd
 
-  # If you have a local, full skeleton directory:
-  gophant create myapp --templates ./my-custom-templates
+  # Create using embedded MVC skeleton
+  gophant create myapp -a mvc
 
-  # Use a local variant under ./templates/<arch>/<variant> (local only)
-  gophant create myapp -a mvc --template react-app
+  # Create using embedded DDD skeleton
+  gophant create myapp -a ddd
 
-  # List available embedded and local templates
+  # List available embedded templates
   gophant templates
 
 CLI flags (summary)
