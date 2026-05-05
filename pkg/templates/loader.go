@@ -1,19 +1,28 @@
 package templates
 
 import (
+	"fmt"
 	"io/fs"
 	"os"
 	"path/filepath"
 )
 
 // Load loads templates from overrideDir if provided or from common locations, otherwise returns embedded templates.
+// If overrideDir points to a non-existent local path but matches an embedded template path
+// like "mvc/react-app" or "./templates/mvc/react-app", the embedded template will be used.
 func Load(overrideDir string) (TemplateSet, error) {
 	// If explicit override provided
 	if overrideDir != "" {
+		// If it's an actual directory on disk, prefer it
 		if ts, err := loadFromDir(overrideDir); err == nil {
 			return ts, nil
+		}
+
+		// Try loading as embedded skeleton (supports paths like "mvc/react-app" or "./templates/mvc/react-app")
+		if ts, err := LoadEmbeddedPath(overrideDir); err == nil {
+			return ts, nil
 		} else {
-			return TemplateSet{}, err
+			return TemplateSet{}, fmt.Errorf("failed to load templates from %s: %w", overrideDir, err)
 		}
 	}
 
@@ -31,7 +40,7 @@ func Load(overrideDir string) (TemplateSet, error) {
 		}
 	}
 
-	// Fallback to embedded
+	// Fallback to embedded default
 	return Embedded, nil
 }
 
