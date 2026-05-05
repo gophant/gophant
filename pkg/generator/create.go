@@ -126,7 +126,7 @@ func CreateProject(appName string, force bool, templatesDir string, assumeYes bo
 		}
 	}
 
-	if err := os.Rename(tempProjectPath, appName); err != nil {
+	if err := moveDir(tempProjectPath, appName); err != nil {
 		return fmt.Errorf("failed to move project into place: %w", err)
 	}
 
@@ -192,4 +192,64 @@ func tryGitInit(dir string) error {
 	cmd.Stdout = io.Discard
 	cmd.Stderr = io.Discard
 	return cmd.Run()
+}
+
+func moveDir(src, dst string) error {
+	// Try fast move first
+	err := os.Rename(src, dst)
+	if err == nil {
+		return nil
+	}
+
+	// Fallback: copy + delete (works across disks)
+	if err := copyDir(src, dst); err != nil {
+		return err
+	}
+
+	return os.RemoveAll(src)
+}
+
+func copyDir(src, dst string) error {
+	return filepath.Walk(src, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+
+		relPath, err := filepath.Rel(src, path)
+		if err != nil {
+			return err
+		}
+
+		targetPath := filepath.Join(dst, relPath)
+
+		if info.IsDir() {
+			return os.MkdirAll(targetPath, info.Mode())
+		}
+
+		return copyFile(path, targetPath, info.Mode())
+	})
+}
+
+func copyFile(src, dst string, perm os.FileMode) error {
+	in, err := os.Open(src)
+	if err != nil {
+		return err
+	}
+	defer in.Close()
+
+	if err := os.MkdirAll(filepath.Dir(dst), 0755); err != nil {
+		return err
+	}
+
+	out, err := os.Create(dst)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+
+	if _, err = io.Copy(out, in); err != nil {
+		return err
+	}
+
+	return os.Chmod(dst, perm)
 }
