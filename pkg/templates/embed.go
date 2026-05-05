@@ -1,47 +1,95 @@
 package templates
 
-import _ "embed"
+import (
+	"embed"
+	"fmt"
+	"io/fs"
+	"path/filepath"
+	"strings"
+)
 
-// Embedded templates (default)
+//go:embed default/*
+var defaultFS embed.FS
 
-//go:embed default/go.mod.tmpl
-var goMod string
+//go:embed mvc/**
+var mvcFS embed.FS
 
-//go:embed default/main.go.tmpl
-var mainGo string
+//go:embed ddd/**
+var dddFS embed.FS
 
-//go:embed default/.env.example.tmpl
-var envExample string
+// Embedded default TemplateSet (fallback)
+var Embedded TemplateSet
 
-//go:embed default/README.md.tmpl
-var readme string
+func init() {
+	if ts, err := loadTemplateSetFromFS(defaultFS, "default"); err == nil {
+		Embedded = ts
+	}
+}
 
-//go:embed default/pkg_config_config.go.tmpl
-var configGo string
+func loadTemplateSetFromFS(fsys fs.FS, base string) (TemplateSet, error) {
+	read := func(name string) (string, error) {
+		p := filepath.ToSlash(filepath.Join(base, name))
+		b, err := fs.ReadFile(fsys, p)
+		if err != nil {
+			return "", err
+		}
+		return string(b), nil
+	}
 
-//go:embed default/app_routes_routes.go.tmpl
-var routesGo string
+	var ts TemplateSet
+	var errAcc error
+	if ts.GoMod, errAcc = read("go.mod.tmpl"); errAcc != nil {
+		return TemplateSet{}, errAcc
+	}
+	if ts.Main, errAcc = read("main.go.tmpl"); errAcc != nil {
+		return TemplateSet{}, errAcc
+	}
+	if ts.Env, errAcc = read(".env.example.tmpl"); errAcc != nil {
+		return TemplateSet{}, errAcc
+	}
+	if ts.Readme, errAcc = read("README.md.tmpl"); errAcc != nil {
+		return TemplateSet{}, errAcc
+	}
+	if ts.Config, errAcc = read("pkg_config_config.go.tmpl"); errAcc != nil {
+		return TemplateSet{}, errAcc
+	}
+	if ts.Routes, errAcc = read("app_routes_routes.go.tmpl"); errAcc != nil {
+		return TemplateSet{}, errAcc
+	}
+	if ts.Root, errAcc = read("cmd_root_root.go.tmpl"); errAcc != nil {
+		return TemplateSet{}, errAcc
+	}
+	if ts.Serve, errAcc = read("cmd_serve_serve.go.tmpl"); errAcc != nil {
+		return TemplateSet{}, errAcc
+	}
+	if ts.Gitignore, errAcc = read("gitignore.tmpl"); errAcc != nil {
+		return TemplateSet{}, errAcc
+	}
+	return ts, nil
+}
 
-//go:embed default/cmd_root_root.go.tmpl
-var rootGo string
-
-//go:embed default/cmd_serve_serve.go.tmpl
-var serveGo string
-
-//go:embed default/gitignore.tmpl
-var gitignore string
-
-// Embedded template set exposed to loader
-var Embedded = TemplateSet{
-	GoMod:     goMod,
-	Main:      mainGo,
-	Env:       envExample,
-	Readme:    readme,
-	Config:    configGo,
-	Routes:    routesGo,
-	Root:      rootGo,
-	Serve:     serveGo,
-	Gitignore: gitignore,
+// LoadEmbeddedPath tries to load a template set from embedded mvc/ddd folders.
+// Accepts paths like "mvc/react-app" or "./templates/mvc/react-app".
+func LoadEmbeddedPath(path string) (TemplateSet, error) {
+	p := strings.TrimPrefix(path, "./templates/")
+	p = strings.TrimPrefix(p, "./")
+	p = strings.TrimPrefix(p, "/")
+	parts := strings.Split(p, string(filepath.Separator))
+	if len(parts) < 2 {
+		return TemplateSet{}, fmt.Errorf("invalid embedded template path: %s", path)
+	}
+	arch := parts[0]
+	name := parts[1]
+	switch arch {
+	case "mvc":
+		return loadTemplateSetFromFS(mvcFS, filepath.ToSlash(filepath.Join("mvc", name)))
+	case "ddd":
+		return loadTemplateSetFromFS(dddFS, filepath.ToSlash(filepath.Join("ddd", name)))
+	case "default":
+		return loadTemplateSetFromFS(defaultFS, filepath.ToSlash(filepath.Join("default", name)))
+	default:
+		return TemplateSet{}, fmt.Errorf("unknown architecture: %s", arch)
+	}
 }
 
 // TemplateSet holds templates
