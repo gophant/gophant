@@ -33,5 +33,3 @@ func init() {
 	rootCmd.PersistentFlags().BoolVarP(&yes, "yes", "y", false, "Answer yes to prompts (non-interactive)")
 	// Subcommands are added in separate files
 }
-
-// git push origin main && git tag v0.2.0 && git push origin v0.2.0 && go clean -modcache && go install github.com/gophant/gophant@latest

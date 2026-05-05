@@ -69,24 +69,38 @@ func loadTemplateSetFromFS(fsys fs.FS, base string) (TemplateSet, error) {
 }
 
 // LoadEmbeddedPath tries to load a template set from embedded mvc/ddd folders.
-// Accepts paths like "mvc/react-app" or "./templates/mvc/react-app".
+// Accepts paths like "mvc", "mvc/react-app" or "./templates/mvc".
 func LoadEmbeddedPath(path string) (TemplateSet, error) {
 	p := strings.TrimPrefix(path, "./templates/")
 	p = strings.TrimPrefix(p, "./")
 	p = strings.TrimPrefix(p, "/")
-	parts := strings.Split(p, string(filepath.Separator))
-	if len(parts) < 2 {
+	// normalize to forward slashes
+	p = filepath.ToSlash(p)
+	parts := strings.Split(p, "/")
+	if len(parts) == 0 || parts[0] == "" {
 		return TemplateSet{}, fmt.Errorf("invalid embedded template path: %s", path)
 	}
 	arch := parts[0]
-	name := parts[1]
+	rest := ""
+	if len(parts) > 1 {
+		rest = strings.Join(parts[1:], "/")
+	}
 	switch arch {
 	case "mvc":
-		return loadTemplateSetFromFS(mvcFS, filepath.ToSlash(filepath.Join("mvc", name)))
+		if rest == "" {
+			return loadTemplateSetFromFS(mvcFS, "mvc")
+		}
+		return loadTemplateSetFromFS(mvcFS, filepath.ToSlash(filepath.Join("mvc", rest)))
 	case "ddd":
-		return loadTemplateSetFromFS(dddFS, filepath.ToSlash(filepath.Join("ddd", name)))
+		if rest == "" {
+			return loadTemplateSetFromFS(dddFS, "ddd")
+		}
+		return loadTemplateSetFromFS(dddFS, filepath.ToSlash(filepath.Join("ddd", rest)))
 	case "default":
-		return loadTemplateSetFromFS(defaultFS, filepath.ToSlash(filepath.Join("default", name)))
+		if rest == "" {
+			return loadTemplateSetFromFS(defaultFS, "default")
+		}
+		return loadTemplateSetFromFS(defaultFS, filepath.ToSlash(filepath.Join("default", rest)))
 	default:
 		return TemplateSet{}, fmt.Errorf("unknown architecture: %s", arch)
 	}

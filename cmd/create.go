@@ -18,13 +18,12 @@ var createCmd = &cobra.Command{
 Examples:
   gophant create myapp                  # use default embedded template
   gophant create myapp -a mvc           # use embedded mvc skeleton
-  gophant create myapp -a mvc --template react-app  # use named variant under mvc (if available on disk)
-  gophant create myapp --templates ./custom_templates
 
 After creation:
   cd myapp
   go mod tidy
   go run main.go`,
+
 	Args: cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		appName := args[0]

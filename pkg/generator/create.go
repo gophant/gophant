@@ -112,8 +112,6 @@ func CreateProject(appName string, force bool, templatesDir string, assumeYes bo
 	}
 
 	// Step 3: Move temp project to target location atomically
-
-	// Step 3: Move temp project to target location atomically
 	if _, err := os.Stat(appName); err == nil {
 		// target exists
 		if force {

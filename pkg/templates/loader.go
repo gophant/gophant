@@ -8,8 +8,8 @@ import (
 )
 
 // Load loads templates from overrideDir if provided or from common locations, otherwise returns embedded templates.
-// If overrideDir points to a non-existent local path but matches an embedded template path
-// like "mvc/react-app" or "./templates/mvc/react-app", the embedded template will be used.
+// If overrideDir is an architecture identifier (e.g. "mvc" or "ddd"), the loader will attempt to load
+// the embedded skeleton for that architecture.
 func Load(overrideDir string) (TemplateSet, error) {
 	// If explicit override provided
 	if overrideDir != "" {
