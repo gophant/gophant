@@ -46,14 +46,13 @@ After creation:
 		// Determine templates dir to use
 		templatesDirToUse := templatesDir
 		if templatesDirToUse == "" && templateName != "" {
-			// If user supplied a path-like template (e.g. "mvc/react-app" or "mvc"),
-			// prefer using that directly (loader supports embedded paths).
-			if strings.Contains(templateName, "/") || templateName == "mvc" || templateName == "ddd" || strings.HasPrefix(templateName, "mvc/") || strings.HasPrefix(templateName, "ddd/") {
-				templatesDirToUse = templateName
-			} else {
-				// Look for ./templates/<arch>/<templateName>
-				templatesDirToUse = filepath.Join(".", "templates", arch, templateName)
+			// Do not accept slash-style template names (e.g. "mvc/react-app").
+			// Template name should be a simple identifier under ./templates/<arch>/<templateName>.
+			if strings.Contains(templateName, "/") {
+				return fmt.Errorf("invalid template name: %s (do not use '/' in template). Use --templates to point to a custom template directory", templateName)
 			}
+			// Look for ./templates/<arch>/<templateName>
+			templatesDirToUse = filepath.Join(".", "templates", arch, templateName)
 		}
 
 		// Create the project

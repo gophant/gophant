@@ -1,10 +1,9 @@
-# Gophant — Go project scaffolder
+Gophant — Go project scaffolder
 
-Gophant is a simple CLI that creates a Go web project (Gin + GORM) with a clear, convention-based layout.
+Gophant is a simple CLI that scaffolds Go web projects (Gin + GORM) with a clear, convention-based layout.
+It provides embedded templates for a "default" project and starter skeletons for "mvc" and "ddd" architectures.
 
-## Install (recommended)
-
-Install with Go (one command):
+Quick install
 
   go install github.com/gophant/gophant@latest
 
@@ -12,74 +11,95 @@ Make sure your Go bin is in PATH:
 
   export PATH="$(go env GOPATH)/bin:$PATH"
 
-(If using a released version, replace @latest with a tag like @v0.1.0.)
+Usage
 
-## Usage
+  gophant create [template] <app_name>
 
-Create a new project:
+Examples
 
+  # Create a new project using embedded default template
   gophant create myapp
 
-Flags:
-  -f, --force           Overwrite existing target directory if present
-  -t, --templates PATH  Use custom templates (see examples below)
+  # Create using embedded mvc skeleton (top-level name)
+  gophant create mvc myapp
 
-Quick start after creation:
+  # Create using embedded mvc skeleton
+  gophant create mvc myapp
+
+  # Create using embedded ddd skeleton
+  gophant create ddd myapp
+
+  # Use a custom templates directory on disk (overrides embedded)
+  gophant create myapp --templates ./my-templates
+
+  # Force overwrite if target exists
+  gophant create myapp --force
+
+Post-create quick start
 
   cd myapp
   cp .env.example .env
   go mod tidy
   go run main.go
 
-## Templates — examples (easy)
+How templates work
 
-Default (built-in templates):
+- Built-in templates are embedded under pkg/templates:
+  - pkg/templates/default  : the default templated files used when no override is provided
+  - pkg/templates/mvc      : mvc skeleton files (ready as a starting point)
+  - pkg/templates/ddd      : ddd skeleton files (starter structure)
 
-  gophant create myapp
+- Template file naming conventions
+  Template files use Go's text/template syntax and the following file name conventions inside a template skeleton:
+    - go.mod.tmpl           (module file; uses {{.AppName}} placeholder)
+    - *.go.tmpl             (Go source files treated as templates)
+    - .env.example, README.md, migrations, resources, etc.
 
-Use templates from current directory:
+- Template data available to templates
+  - {{.AppName}}  — name of the generated app (used to set module path in go.mod)
+  - {{.Year}}     — year value provided by the generator
 
-1. Create a folder named "templates" where you run the command.
-2. Put these files inside the folder:
-   - go.mod.tmpl
-   - main.go.tmpl
-   - .env.example.tmpl
-   - README.md.tmpl
-   - pkg_config_config.go.tmpl
-   - internal_routes_routes.go.tmpl
-   - gitignore.tmpl
+Using custom templates
+
+1. Create a directory that mirrors the layout you want the final project to have.
+2. Use .tmpl suffix for files that require placeholder substitution (e.g., main.go.tmpl, go.mod.tmpl).
 3. Run:
+     gophant create myapp --templates ./path/to/your/templates
 
-  gophant create myapp
+Advanced: embedded template selection
 
-Use templates from a specific path:
+- If the CLI argument for template matches an embedded path like "mvc" or "mvc/react-app",
+  Gophant will prefer the embedded skeleton when no local templates directory is provided.
+- You can also place a templates/ directory in your current working directory and the CLI will pick it up automatically.
 
-  gophant create myapp -t /home/me/custom-templates
+Project layout produced
 
-The CLI will use your files instead of the built-in templates.
+A generated project will look like this (example):
 
-## Run tests & format code (local)
+  myapp/
+  ├── cmd/
+  ├── app/ or internal/
+  ├── pkg/
+  ├── migrations/
+  ├── .env.example
+  ├── go.mod
+  └── main.go
 
-- Run tests:
+Validation & release notes
 
-  go test ./...
+- The repository builds successfully (go build ./...).
+- Templates are embedded and validated for compilation-time embedding (placeholder files added where necessary).
 
-- Format code (keeps style consistent):
+Contributing
 
-  go fmt ./...
+- Open an issue to discuss changes or submit a PR.
+- Prefer small, focused changes and include tests for behavior changes.
 
-Tests check behavior; fmt fixes code formatting.
+CI & publishing
 
-## CI & Releases (simple)
+- Add a GitHub Actions workflow to run `go test ./...` and `gofmt` on each push.
+- Use goreleaser for publishing binaries when creating a release tag.
 
-- Enable GitHub Actions to run tests and go fmt on each push (helps catch problems early).
-- Use goreleaser to build and publish binaries for different OS/architectures when you create a release tag.
-
-## Contributing (simple)
-
-- Open an issue to discuss changes or submit a small PR.
-- Prefer small, focused PRs and add tests for any code changes.
-
-## License
+License
 
 MIT
