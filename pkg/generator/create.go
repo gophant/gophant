@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"go/format"
 	"io"
+	"io/fs"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -59,35 +60,58 @@ func CreateProject(appName string, force bool, templatesDir string, assumeYes bo
 		}
 	}
 
-	// Step 2: Load templates and create project files inside temp project
+	// Step 2: Prepare project data
 	projectData := ProjectData{
 		AppName: appName,
 		Year:    "2026",
 	}
 
-	ts, err := templates.Load(templatesDir)
-	if err != nil {
-		return fmt.Errorf("failed to load templates: %w", err)
-	}
+	// If templatesDir points to a full skeleton directory, copy it and apply template substitutions
+	usedSkeleton := false
+	if templatesDir != "" {
+		if info, err := os.Stat(templatesDir); err == nil && info.IsDir() {
+			fmt.Printf("📦 Using skeleton template directory: %s\n", templatesDir)
+			if err := copyDir(templatesDir, tempProjectPath); err != nil {
+				return fmt.Errorf("failed to copy template skeleton: %w", err)
+			}
 
-	files := map[string]string{
-		filepath.Join(tempProjectPath, "go.mod"):                     ts.GoMod,
-		filepath.Join(tempProjectPath, "main.go"):                    ts.Main,
-		filepath.Join(tempProjectPath, ".env.example"):               ts.Env,
-		filepath.Join(tempProjectPath, "README.md"):                  ts.Readme,
-		filepath.Join(tempProjectPath, "pkg", "config", "config.go"): ts.Config,
-		filepath.Join(tempProjectPath, "app", "routes", "routes.go"): ts.Routes,
-		filepath.Join(tempProjectPath, "cmd", "root.go"):             ts.Root,
-		filepath.Join(tempProjectPath, "cmd", "serve.go"):            ts.Serve,
-		filepath.Join(tempProjectPath, ".gitignore"):                 ts.Gitignore,
-	}
+			// Perform placeholder substitution across all files in tempProjectPath
+			if err := substituteTemplatesInDir(tempProjectPath, projectData); err != nil {
+				return fmt.Errorf("failed to apply templates to skeleton: %w", err)
+			}
 
-	fmt.Println("📝 Creating files...")
-	for filePath, templateStr := range files {
-		if err := createFileFromTemplate(filePath, templateStr, projectData); err != nil {
-			return fmt.Errorf("failed to create file %s: %w", filePath, err)
+			usedSkeleton = true
 		}
 	}
+
+	// Step 2b: Load templates and create project files inside temp project (fallback to templated files)
+	if !usedSkeleton {
+		ts, err := templates.Load(templatesDir)
+		if err != nil {
+			return fmt.Errorf("failed to load templates: %w", err)
+		}
+
+		files := map[string]string{
+			filepath.Join(tempProjectPath, "go.mod"):                     ts.GoMod,
+			filepath.Join(tempProjectPath, "main.go"):                    ts.Main,
+			filepath.Join(tempProjectPath, ".env.example"):               ts.Env,
+			filepath.Join(tempProjectPath, "README.md"):                  ts.Readme,
+			filepath.Join(tempProjectPath, "pkg", "config", "config.go"): ts.Config,
+			filepath.Join(tempProjectPath, "app", "routes", "routes.go"): ts.Routes,
+			filepath.Join(tempProjectPath, "cmd", "root.go"):             ts.Root,
+			filepath.Join(tempProjectPath, "cmd", "serve.go"):            ts.Serve,
+			filepath.Join(tempProjectPath, ".gitignore"):                 ts.Gitignore,
+		}
+
+		fmt.Println("📝 Creating files...")
+		for filePath, templateStr := range files {
+			if err := createFileFromTemplate(filePath, templateStr, projectData); err != nil {
+				return fmt.Errorf("failed to create file %s: %w", filePath, err)
+			}
+		}
+	}
+
+	// Step 3: Move temp project to target location atomically
 
 	// Step 3: Move temp project to target location atomically
 	if _, err := os.Stat(appName); err == nil {
@@ -252,4 +276,63 @@ func copyFile(src, dst string, perm os.FileMode) error {
 	}
 
 	return os.Chmod(dst, perm)
+}
+
+// substituteTemplatesInDir walks the directory and treats file contents as text/templates
+// performing substitution using the provided data. Go files are gofmt-ed after substitution.
+func substituteTemplatesInDir(dir string, data interface{}) error {
+	return filepath.WalkDir(dir, func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if d.IsDir() {
+			return nil
+		}
+
+		// Read file
+		b, err := os.ReadFile(path)
+		if err != nil {
+			return err
+		}
+
+		// Skip binary files
+		if isBinary(b) {
+			return nil
+		}
+
+		tmpl, err := template.New("file").Parse(string(b))
+		if err != nil {
+			// If parsing fails, skip substitution but do not fail entire process
+			return nil
+		}
+
+		var buf bytes.Buffer
+		if err := tmpl.Execute(&buf, data); err != nil {
+			return err
+		}
+
+		out := buf.Bytes()
+		if filepath.Ext(path) == ".go" {
+			if formatted, err := format.Source(out); err == nil {
+				out = formatted
+			}
+		}
+
+		info, _ := d.Info()
+		perm := fs.FileMode(0644)
+		if info != nil {
+			perm = info.Mode()
+		}
+
+		if err := os.WriteFile(path, out, perm); err != nil {
+			return err
+		}
+
+		return nil
+	})
+}
+
+// isBinary does a naive check for NUL bytes
+func isBinary(b []byte) bool {
+	return bytes.IndexByte(b, 0) != -1
 }
