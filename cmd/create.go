@@ -9,6 +9,7 @@ import (
 )
 
 var force bool
+var arch string
 
 // createCmd represents the create command
 var createCmd = &cobra.Command{
@@ -18,7 +19,7 @@ var createCmd = &cobra.Command{
 
 Examples:
   gophant create myapp                  # use default embedded template
-  gophant create react-app myapp        # use 'react-app' template from ./templates/react-app
+  gophant create react-app myapp        # use 'react-app' template from ./templates/mvc/react-app
   gophant create myapp --templates ./custom_templates
 
 After creation:
@@ -36,11 +37,16 @@ After creation:
 			appName = args[1]
 		}
 
+		// Validate arch
+		if arch != "" && arch != "mvc" && arch != "ddd" {
+			return fmt.Errorf("invalid arch: %s (must be 'mvc' or 'ddd')", arch)
+		}
+
 		// Determine templates dir to use
 		templatesDirToUse := templatesDir
 		if templatesDirToUse == "" && templateName != "" {
-			// Look for ./templates/<templateName>
-			templatesDirToUse = filepath.Join("./templates", templateName)
+			// Look for ./templates/<arch>/<templateName>
+			templatesDirToUse = filepath.Join(".", "templates", arch, templateName)
 		}
 
 		// Create the project
@@ -63,5 +69,6 @@ After creation:
 
 func init() {
 	createCmd.Flags().BoolVarP(&force, "force", "f", false, "Overwrite existing directory if present")
+	createCmd.Flags().StringVar(&arch, "arch", "mvc", "Architecture template group to use (mvc|ddd)")
 	rootCmd.AddCommand(createCmd)
 }

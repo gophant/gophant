@@ -1,0 +1,12 @@
+name: react-app
+description: "Template generated from professional-go-architecture.md"
+files:
+  - cmd/
+  - pkg/
+  - internal/
+  - config/
+  - database/
+  - routes/
+  - resources/
+  - storage/
+  - tests/
