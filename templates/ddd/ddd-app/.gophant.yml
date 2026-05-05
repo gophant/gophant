@@ -1,0 +1,11 @@
+name: ddd-app
+description: "DDD template generated from professional-go-architecture.md"
+files:
+  - cmd/
+  - pkg/
+  - domain/
+  - application/
+  - infrastructure/
+  - interfaces/
+  - routes/
+  - database/
